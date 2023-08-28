@@ -8,7 +8,6 @@ public abstract class BaseActorModule
     //Keeps track of the ModularActor that initialized this module. Used for checking conditions and applying changes during logic.
     protected ModularActor parentActor;
 
-
     /// <summary>
     /// Called during Start(). Attempts to tell the module to process a physics tick.
     /// </summary>
@@ -53,10 +52,12 @@ public abstract class BaseActorModule
     /// <returns>Returns true if the module should be allowed to tick</returns>
     protected virtual bool CanFrameTick() => true;
     /// <summary>
-    /// Called during FixedUpdate()
+    /// Called during FixedUpdate(). 
+    /// Follows the same behaivour as CanFrameTick, so this doesn't need to be overriden if the 
+    /// behaivour is the same between both methods.
     /// </summary>
     /// <returns>Returns true if the module should be allowed to tick</returns>
-    protected virtual bool CanPhysicsTick() => true;
+    protected virtual bool CanPhysicsTick() => CanPhysicsTick();
 
     protected abstract void OnInitialize();
     protected abstract void OnFrameTick();

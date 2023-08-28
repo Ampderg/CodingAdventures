@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class ModularActor : MonoBehaviour
 {
-
+    [SerializeField]
     private BaseActorModule[] modules;
+
+    public ModularActorVariables Variables = new ModularActorVariables();
 
     // Start is called before the first frame update
     private void Start()
