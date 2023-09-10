@@ -23,7 +23,8 @@ public enum ModularActorVariables_Bool
     Input_JumpHeld,
     Input_JumpDown,
     Input_JumpUp,
-    Grounded
+    Grounded,
+    Floating
 }
 
 public enum ModularActorVariables_Float

@@ -25,13 +25,13 @@ public class ActorRobo_Module_GroundedChecker : BaseActorModule
         if(cols.Length > 0)
         {
             //Dont set yourself as grounded if you're leaving the ground!
-            if(rigidbody.velocity.y <= maxYVelocityForGrounded)
+            //if(rigidbody.velocity.y <= maxYVelocityForGrounded)
             {
                 grounded = true;
             }
         }
 
         logic.SetBool(ModularActorVariables_Bool.Grounded, grounded);
-        
+        Debug.Log(grounded);
     }
 }

@@ -43,6 +43,9 @@ public class ActorRobo_Logic_Player : ModularActorLogic
 
     public override void TryInit()
     {
+
+        frame.BuildRobotMesh();
+
         SetObject(ModularActorVariables_Object.CharacterRigidbody, rigidbody);
         SetObject(ModularActorVariables_Object.RobotFrame, frame);
 

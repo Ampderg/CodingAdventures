@@ -5,6 +5,8 @@ using UnityEngine;
 public abstract class RobotPiece : ScriptableObject
 {
     public abstract RobotSlot GetSlotType();
+
+    public RobotPartObject Model;
 }
 
 public enum RobotSlot

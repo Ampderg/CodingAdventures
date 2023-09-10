@@ -18,16 +18,25 @@ public class ActorRobo_Module_VerticalMovement : BaseActorModule
 
     private float coyoteTimer;
 
+    private JumpChargeEffect effect;
+
     bool coyoteGrounded;
+
+    private JumpState state = JumpState.Stop;
+
+    private float prevJumpForce;
 
     protected override void OnInit(ModularActor actor, ModularActorLogic logic)
     {
         rigidbody = (Rigidbody)logic.GetObject(ModularActorVariables_Object.CharacterRigidbody);
         frame = (RobotFrame)logic.GetObject(ModularActorVariables_Object.RobotFrame);
+        effect = ((RobotPartObject_Legs)frame.GetRobotPartObject(RobotSlot.Legs)).GetJumpChargeEffect();
     }
 
     protected override void OnFixedUpdate(ModularActor actor, ModularActorLogic logic)
     {
+        JumpState newState = JumpState.Stop;
+
         bool targetGrounded = logic.GetBool(ModularActorVariables_Bool.Grounded);
         if(!targetGrounded)
         {
@@ -72,9 +81,31 @@ public class ActorRobo_Module_VerticalMovement : BaseActorModule
                 if (chargeTime >= currentSettings.TimeUntilMaxCharge) 
                     chargeTime = currentSettings.TimeUntilMaxCharge;
 
-                Debug.Log(chargeTime);
+                newState = JumpState.Charge;
+                if(newState != state)
+                {
+                    state = newState;
+                    if (effect != null) effect.StartCharge();
+                }
+
+                if (effect != null)
+                {
+                    float vertLaunch = currentSettings.VerticalImpulseScale
+                        * currentSettings.VerticalImpulseOverCharge.Evaluate(chargeTime / currentSettings.TimeUntilMaxCharge);
+                    float latLaunch = currentSettings.LateralImpulseScale
+                        * currentSettings.LateralImpulseOverCharge.Evaluate(chargeTime / currentSettings.TimeUntilMaxCharge);
+
+                    float launchIntensity = vertLaunch / currentSettings.VerticalImpulseScale;
+
+                    if(latLaunch > vertLaunch)
+                    {
+                        launchIntensity = latLaunch / currentSettings.LateralImpulseScale;
+                    }
+
+                    effect.SetIntensity(launchIntensity);
+                }
             }
-            if(chargeTime > 0 && jumpUp)
+            else if(chargeTime > 0 && jumpUp)
             {
                 verticalJumpForce = currentSettings.VerticalImpulseScale
                     * currentSettings.VerticalImpulseOverCharge.Evaluate(chargeTime / currentSettings.TimeUntilMaxCharge);
@@ -84,19 +115,27 @@ public class ActorRobo_Module_VerticalMovement : BaseActorModule
 
                 coyoteGrounded = false;
                 logic.SetBool(ModularActorVariables_Bool.Grounded, false);
-            }
-        }
-        else // Handle instant jump logic
-        {
-            if (jumpDown)
-            {
-                verticalJumpForce = currentSettings.VerticalImpulseScale;
-                lateralJumpForce = currentSettings.VerticalImpulseScale;
 
-                coyoteGrounded = false;
-                logic.SetBool(ModularActorVariables_Bool.Grounded, false);
+                newState = JumpState.Jump;
+                if (newState != state)
+                {
+                    state = newState;
+                    if (effect != null) effect.StartJump();
+                    prevJumpForce = verticalJumpForce;
+                }
             }
         }
+        //else // Handle instant jump logic
+        //{
+        //    if (jumpDown)
+        //    {
+        //        verticalJumpForce = currentSettings.VerticalImpulseScale;
+        //        lateralJumpForce = currentSettings.VerticalImpulseScale;
+
+        //        coyoteGrounded = false;
+        //        logic.SetBool(ModularActorVariables_Bool.Grounded, false);
+        //    }
+        //}
 
         Vector3 velocity = rigidbody.velocity;
 
@@ -127,22 +166,66 @@ public class ActorRobo_Module_VerticalMovement : BaseActorModule
         velocity += Vector3.down * gravity * Time.fixedDeltaTime;
         if (velocity.y < -frame.Legs.MaxFallSpeed) velocity.y = -frame.Legs.MaxFallSpeed;
 
-        if (frame.Legs.CanFloat && !logic.GetBool(ModularActorVariables_Bool.Grounded))
+        if (state != JumpState.Jump && frame.Legs.CanFloat && !logic.GetBool(ModularActorVariables_Bool.Grounded))
         {
             if (jumpHeld)
             {
                 floatT = Mathf.MoveTowards(floatT, 1, Time.fixedDeltaTime * frame.Legs.FloatWindupSpeed);
                 if (velocity.y < frame.Legs.FloatUpwardsVelocity)
                     velocity.y = Mathf.Lerp(velocity.y, frame.Legs.FloatUpwardsVelocity, floatT);
+
+                newState = JumpState.Floating;
+                if(newState != state)
+                {
+                    state = newState;
+                    if (effect != null) effect.StartHover();
+                }
+
+                if (effect != null) effect.SetIntensity(floatT);
             }
             else
             {
                 floatT = 0;
+
+                state = JumpState.Stop;
+                if (effect != null)
+                    effect.Stop();
             }
         }
 
         rigidbody.velocity = velocity;
 
         prevGrounded = grounded;
+
+        //Handle jump visual effect
+        if(state == JumpState.Jump)
+        {
+            if (rigidbody.velocity.y <= 0)
+            {
+                state = JumpState.Stop;
+                if (effect != null)
+                    effect.Stop();
+            }
+            else
+            {
+                if (effect != null)
+                    effect.SetIntensity(Mathf.Clamp01(rigidbody.velocity.y / prevJumpForce));
+            }
+        }
+
+        if(coyoteGrounded && (state == JumpState.Floating || state == JumpState.Jump))
+        {
+            state = JumpState.Stop;
+            if (effect != null)
+                effect.Stop();
+        }
     }
+}
+
+public enum JumpState
+{
+    Stop,
+    Floating,
+    Jump,
+    Charge
 }

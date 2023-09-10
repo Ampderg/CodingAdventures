@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df03220746d81474d960b8206785c5a4, type: 3}
   m_Name: RobotPiece_Legs_Rocket
   m_EditorClassIdentifier: 
+  Model: {fileID: 5198153553505945574, guid: 7c5408d5971724c4cb1643f931bb64e6, type: 3}
   GroundedSettings:
     MaxSpeed: 14
     Acceleration: 90
@@ -30,6 +31,15 @@ MonoBehaviour:
         weightedMode: 0
         inWeight: 0
         outWeight: 0
+      - serializedVersion: 3
+        time: 0.6480207
+        value: 0.6985872
+        inSlope: 0.7027622
+        outSlope: 0.7027622
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
         value: 1
@@ -69,7 +79,7 @@ MonoBehaviour:
       m_RotationOrder: 4
   AerialSettings:
     MaxSpeed: 14
-    Acceleration: 90
+    Acceleration: 50
     Deceleration: 30
     TimeUntilMaxCharge: 0
     VerticalImpulseScale: 0
@@ -123,9 +133,9 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
   DoesCharge: 1
-  FallGravity: 25
+  FallGravity: 30
   JumpHoldGravity: 5
-  JumpNonholdGravity: 20
+  JumpNonholdGravity: 25
   MaxFallSpeed: 25
   CanFloat: 1
   FloatWindupSpeed: 0.5
